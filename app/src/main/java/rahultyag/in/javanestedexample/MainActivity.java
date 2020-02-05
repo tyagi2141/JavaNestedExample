@@ -48,23 +48,12 @@ public class MainActivity extends AppCompatActivity {
 		
 		initListValues();
 		mSimpleListAdapter = new SimpleListAdapter(this, mStrings);
-		mSimpleArrayListAdapter = new SimpleArrayListAdapter(this, mStrings);
-		
-		mSearchableSpinner = (SearchableSpinner) findViewById(R.id.SearchableSpinner);
-		mSearchableSpinner.setAdapter(mSimpleArrayListAdapter);
-		mSearchableSpinner.setOnItemSelectedListener(mOnItemSelectedListener);
-		mSearchableSpinner.setStatusListener(new IStatusListener() {
-			@Override
-			public void spinnerIsOpening() {
-				mSearchableSpinner1.hideEdit();
-				mSearchableSpinner2.hideEdit();
-			}
-			
-			@Override
-			public void spinnerIsClosing() {
-			
-			}
-		});
+
+
+
+
+
+
 		
 		mSearchableSpinner1 = (SearchableSpinner) findViewById(R.id.SearchableSpinner1);
 		mSearchableSpinner1.setAdapter(mSimpleListAdapter);
@@ -196,8 +185,25 @@ public class MainActivity extends AppCompatActivity {
 				return taskList;
 			}
 			@Override
-			protected void onPostExecute(List<Area> tasks) {
-				super.onPostExecute(tasks);
+			protected void onPostExecute(List<Area> areas) {
+				super.onPostExecute(areas);
+				mSimpleArrayListAdapter = new SimpleArrayListAdapter(getApplicationContext(), areas);
+
+				mSearchableSpinner = (SearchableSpinner) findViewById(R.id.SearchableSpinner);
+				mSearchableSpinner.setAdapter(mSimpleArrayListAdapter);
+				mSearchableSpinner.setOnItemSelectedListener(mOnItemSelectedListener);
+				mSearchableSpinner.setStatusListener(new IStatusListener() {
+					@Override
+					public void spinnerIsOpening() {
+						mSearchableSpinner1.hideEdit();
+						mSearchableSpinner2.hideEdit();
+					}
+
+					@Override
+					public void spinnerIsClosing() {
+
+					}
+				});
 				
 			}
 		}

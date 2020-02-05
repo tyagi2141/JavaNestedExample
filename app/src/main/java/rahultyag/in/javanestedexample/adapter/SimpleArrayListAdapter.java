@@ -3,6 +3,7 @@ package rahultyag.in.javanestedexample.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -16,24 +17,26 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.ISpinnerSelectedView;
 import gr.escsoft.michaelprimez.searchablespinner.tools.UITools;
 import rahultyag.in.javanestedexample.R;
+import rahultyag.in.javanestedexample.model.Area;
 
 /**
  * Created by michael on 1/8/17.
  */
 
-public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filterable, ISpinnerSelectedView {
+public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filterable, ISpinnerSelectedView {
 
     private Context mContext;
-    private ArrayList<String> mBackupStrings;
-    private ArrayList<String> mStrings;
+    private List<Area> mBackupStrings;
+    private List<Area> mStrings;
     private StringFilter mStringFilter = new StringFilter();
 
-    public SimpleArrayListAdapter(Context context, ArrayList<String> strings) {
+    public SimpleArrayListAdapter(Context context, List<Area> strings) {
         super(context, R.layout.view_list_item);
         mContext = context;
         mStrings = strings;
@@ -42,21 +45,31 @@ public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filt
 
     @Override
     public int getCount() {
-        return mStrings == null ? 0 : mStrings.size() + 1;
+
+        return mStrings == null ? 0 : mStrings.size();
     }
 
     @Override
-    public String getItem(int position) {
-        if (mStrings != null && position > 0)
-            return mStrings.get(position - 1);
-        else
+    public Area getItem(int position) {
+       // Area area=mStrings.get(position);
+       if (mStrings != null && position > 0) {
+           Area area = mStrings.get(position);
+
+           return area;
+       }
+        else{
             return null;
+    }
     }
 
     @Override
     public long getItemId(int position) {
-        if (mStrings == null && position > 0)
-            return mStrings.get(position).hashCode();
+
+        if (mStrings == null && position > 0) {
+
+            Area area=mStrings.get(position);
+            return area.hashCode();
+        }
         else
             return -1;
     }
@@ -64,14 +77,18 @@ public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filt
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = null;
+        Area area=mStrings.get(position);
         if (position == 0) {
             view = getNoSelectionView();
         } else {
             view = View.inflate(mContext, R.layout.view_list_item, null);
             ImageView letters = (ImageView) view.findViewById(R.id.ImgVw_Letters);
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
-            letters.setImageDrawable(getTextDrawable(mStrings.get(position-1)));
-            dispalyName.setText(mStrings.get(position-1));
+            TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
+
+            letters.setImageDrawable(getTextDrawable(area.getArea()));
+            dispalyName.setText(area.getArea());
+            TxtVw_Terror.setText(area.getTerritory());
         }
         return view;
     }
@@ -79,14 +96,19 @@ public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filt
     @Override
     public View getSelectedView(int position) {
         View view = null;
+        Area area=mStrings.get(position);
+        Log.e("yfyffyfyfyf",mStrings.toString());
         if (position == 0) {
             view = getNoSelectionView();
         } else {
             view = View.inflate(mContext, R.layout.view_list_item, null);
             ImageView letters = (ImageView) view.findViewById(R.id.ImgVw_Letters);
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
-            letters.setImageDrawable(getTextDrawable(mStrings.get(position-1)));
-            dispalyName.setText(mStrings.get(position-1));
+            TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
+
+            letters.setImageDrawable(getTextDrawable(area.getArea()));
+            dispalyName.setText(area.getArea());
+            TxtVw_Terror.setText(area.getTerritory());
         }
         return view;
     }
@@ -137,9 +159,9 @@ public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filt
                 filterResults.values = mBackupStrings;
                 return filterResults;
             }
-            final ArrayList<String> filterStrings = new ArrayList<>();
-            for (String text : mBackupStrings) {
-                if (text.toLowerCase().contains(constraint)) {
+            final List<Area> filterStrings = new ArrayList<>();
+            for (Area text : mBackupStrings) {
+                if (text.getArea().toLowerCase().contains(constraint)) {
                     filterStrings.add(text);
                 }
             }
@@ -151,7 +173,13 @@ public class SimpleArrayListAdapter extends ArrayAdapter<String> implements Filt
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             mStrings = (ArrayList) results.values;
-            notifyDataSetChanged();
+            Log.e("jhbjhbjhbjhb",mStrings.toString()+"\n"+results.values);
+            if (results.count > 0) {
+                notifyDataSetChanged();
+            } else {
+                notifyDataSetInvalidated();
+            }
+
         }
     }
 

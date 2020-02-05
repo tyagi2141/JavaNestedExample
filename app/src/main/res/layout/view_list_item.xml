@@ -14,13 +14,25 @@
     <ImageView
         android:id="@+id/ImgVw_Letters"
         android:layout_width="32dp"
-        android:layout_height="32dp"/>
-
+        android:src="@drawable/ic_launcher_background"
+        android:layout_height="match_parent"/>
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
     <TextView
         android:id="@+id/TxtVw_DisplayName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
+        android:hint="name"
         android:layout_gravity="center_vertical"/>
-
+    <TextView
+        android:id="@+id/TxtVw_Terror"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:hint="name"
+        android:layout_gravity="center_vertical"/>
+</LinearLayout>
 </LinearLayout>
