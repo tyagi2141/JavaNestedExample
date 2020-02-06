@@ -1,11 +1,26 @@
 package rahultyag.in.javanestedexample;
 
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import gr.escsoft.michaelprimez.searchablespinner.SearchableSpinner;
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.IStatusListener;
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener;
-import rahultyag.in.javanestedexample.adapter.SimpleArrayListAdapter;
-import rahultyag.in.javanestedexample.adapter.SimpleListAdapter;
+import rahultyag.in.javanestedexample.adapter.AreaListAdapter;
+import rahultyag.in.javanestedexample.adapter.CountryListAdapter;
+import rahultyag.in.javanestedexample.adapter.EmployeeListAdapter;
+import rahultyag.in.javanestedexample.adapter.RegionListAdapter;
+import rahultyag.in.javanestedexample.adapter.ZoneListAdapter;
 import rahultyag.in.javanestedexample.model.Area;
 import rahultyag.in.javanestedexample.model.Country;
 import rahultyag.in.javanestedexample.model.Employee;
@@ -17,91 +32,42 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 	APIInterface apiInterface;
 	
-	private SearchableSpinner mSearchableSpinner;
-	private SearchableSpinner mSearchableSpinner1;
-	private SearchableSpinner mSearchableSpinner2;
-	private SearchableSpinner mSearchableSpinner3;
-	private SimpleListAdapter mSimpleListAdapter;
-	private SimpleArrayListAdapter mSimpleArrayListAdapter;
-	private final ArrayList<String> mStrings = new ArrayList<>();
+	private SearchableSpinner CountrySpinner;
+	private SearchableSpinner AreaSpinner;
+	private SearchableSpinner ZoneSpinner;
+	private SearchableSpinner EmployeeSpinner;
+	private SearchableSpinner RegionSpinner;
+	
+	private EmployeeListAdapter employeeAdapter;
+	private CountryListAdapter countryAdapter;
+	private AreaListAdapter AreaListAdapter;
+	private ZoneListAdapter ZoneListAdapter;
+	private RegionListAdapter RegionListAdapters;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		apiInterface = APIClient.getClient().create(APIInterface.class);
+		EmployeeSpinner = findViewById(R.id.EmployeeSpinnerId);
+		RegionSpinner = findViewById(R.id.RegionAapterId);
+		ZoneSpinner = findViewById(R.id.ZoneSpinnerId);
+		AreaSpinner = findViewById(R.id.AreaSpinnerId);
+		CountrySpinner = findViewById(R.id.CountrySpinnerId);
 		
-		initListValues();
-		mSimpleListAdapter = new SimpleListAdapter(this, mStrings);
-
-
-
-
-
-
+		CountrySpinner.setOnItemSelectedListener(mOnItemSelectedListenerCountry);
+		EmployeeSpinner.setOnItemSelectedListener(mOnItemSelectedListenerEmployee);
+		AreaSpinner.setOnItemSelectedListener(mOnItemSelectedListenerArea);
+		ZoneSpinner.setOnItemSelectedListener(mOnItemSelectedListenerZone);
+		RegionSpinner.setOnItemSelectedListener(mOnItemSelectedListenerRegion);
 		
-		mSearchableSpinner1 = (SearchableSpinner) findViewById(R.id.SearchableSpinner1);
-		mSearchableSpinner1.setAdapter(mSimpleListAdapter);
-		mSearchableSpinner1.setOnItemSelectedListener(mOnItemSelectedListener);
-		mSearchableSpinner1.setStatusListener(new IStatusListener() {
-			@Override
-			public void spinnerIsOpening() {
-				mSearchableSpinner.hideEdit();
-				mSearchableSpinner2.hideEdit();
-			}
-			
-			@Override
-			public void spinnerIsClosing() {
-			
-			}
-		});
+		Toolbar toolbar = findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
 		
-		mSearchableSpinner2 = (SearchableSpinner) findViewById(R.id.SearchableSpinner2);
-		mSearchableSpinner2.setAdapter(mSimpleListAdapter);
-		mSearchableSpinner2.setOnItemSelectedListener(mOnItemSelectedListener);
-		mSearchableSpinner2.setStatusListener(new IStatusListener() {
-			@Override
-			public void spinnerIsOpening() {
-				mSearchableSpinner.hideEdit();
-				mSearchableSpinner1.hideEdit();
-			}
-			
-			@Override
-			public void spinnerIsClosing() {
-			
-			}
-		});
 		
-		mSearchableSpinner3 = (SearchableSpinner) findViewById(R.id.SearchableSpinner3);
-		mSearchableSpinner3.setAdapter(mSimpleListAdapter);
-		mSearchableSpinner3.setOnItemSelectedListener(mOnItemSelectedListener);
-		mSearchableSpinner3.setStatusListener(new IStatusListener() {
-			@Override
-			public void spinnerIsOpening() {
-				mSearchableSpinner.hideEdit();
-				mSearchableSpinner3.hideEdit();
-			}
-			
-			@Override
-			public void spinnerIsClosing() {
-			
-			}
-		});
 		
 		Call<Example> call = apiInterface.doGetListResources();
 		call.enqueue(new Callback<Example>() {
@@ -120,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 		
-		getArea();
+	
 		getCountry();
-		getEmployee();
-		getRegion();
-		getZone();
+		
+		
+		
 	}
 	
 	class SaveTask extends AsyncTask<ResponseData, Void, Void> {
@@ -134,41 +100,75 @@ public class MainActivity extends AppCompatActivity {
 			
 			ResponseData responseData=voids[0];
 			
-			//adding to database
 			for (Area area:responseData.getArea()){
 				DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
 						.taskDao()
 						.insertAllArea(area);
-				Log.e("AREASSS",area.toString());
 			}
 			for (Country country:responseData.getCountry()){
 				DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
 						.taskDao()
 						.insertAllCountry(country);
-				Log.e("COUNTRYYY",country.toString());
 			}
 			for (Employee employee:responseData.getEmployee()){
 				DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
 						.taskDao()
 						.insertAllEmployee(employee);
-				Log.e("EMPLOYEEEEE",employee.toString());
 			}
 			for (Region region:responseData.getRegion()){
 				DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
 						.taskDao()
 						.insertAllRegion(region);
-				Log.e("REGIONSSS",region.toString());
 			}
 			for (Zone zone:responseData.getZone()){
 				DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
 						.taskDao()
 						.insertAllZone(zone);
-				Log.e("ZONEeee",zone.toString());
 			}
 		
 			return null;
 		}
 	}
+	
+	private void getCountry() {
+		class GetCountry extends AsyncTask<Void, Void, List<Country>> {
+			
+			@Override
+			protected List<Country> doInBackground(Void... voids) {
+				List<Country> taskList = DatabaseClient
+						.getInstance(getApplicationContext())
+						.getAppDatabase()
+						.taskDao()
+						.getAllCountry();
+				
+				return taskList;
+			}
+			@Override
+			protected void onPostExecute(List<Country> tasks) {
+				super.onPostExecute(tasks);
+				countryAdapter = new CountryListAdapter(getApplicationContext(), tasks);
+				CountrySpinner.setAdapter(countryAdapter);
+				
+				CountrySpinner.setStatusListener(new IStatusListener() {
+					@Override
+					public void spinnerIsOpening() {
+						hideSpinnerView();
+					}
+					
+					@Override
+					public void spinnerIsClosing() {
+					
+					}
+				});
+				
+			}
+		}
+		
+		GetCountry gt = new GetCountry();
+		gt.execute();
+	}
+	
+	
 	
 	private void getArea() {
 		class GetTasks extends AsyncTask<Void, Void, List<Area>> {
@@ -181,22 +181,18 @@ public class MainActivity extends AppCompatActivity {
 						.taskDao()
 						.getAllArea();
 				
-				Log.e("AREAAAAAAA",taskList.toString());
 				return taskList;
 			}
 			@Override
 			protected void onPostExecute(List<Area> areas) {
 				super.onPostExecute(areas);
-				mSimpleArrayListAdapter = new SimpleArrayListAdapter(getApplicationContext(), areas);
-
-				mSearchableSpinner = (SearchableSpinner) findViewById(R.id.SearchableSpinner);
-				mSearchableSpinner.setAdapter(mSimpleArrayListAdapter);
-				mSearchableSpinner.setOnItemSelectedListener(mOnItemSelectedListener);
-				mSearchableSpinner.setStatusListener(new IStatusListener() {
+				AreaListAdapter = new AreaListAdapter(getApplicationContext(), areas);
+			
+				AreaSpinner.setAdapter(AreaListAdapter);
+				AreaSpinner.setStatusListener(new IStatusListener() {
 					@Override
 					public void spinnerIsOpening() {
-						mSearchableSpinner1.hideEdit();
-						mSearchableSpinner2.hideEdit();
+						hideSpinnerView();
 					}
 
 					@Override
@@ -211,32 +207,8 @@ public class MainActivity extends AppCompatActivity {
 		GetTasks gt = new GetTasks();
 		gt.execute();
 	}
-	private void getCountry() {
-		class GetCountry extends AsyncTask<Void, Void, List<Country>> {
-			
-			@Override
-			protected List<Country> doInBackground(Void... voids) {
-				List<Country> taskList = DatabaseClient
-						.getInstance(getApplicationContext())
-						.getAppDatabase()
-						.taskDao()
-						.getAllCountry();
-				
-				Log.e("COUNTRYYYYYY",taskList.toString());
-				return taskList;
-			}
-			@Override
-			protected void onPostExecute(List<Country> tasks) {
-				super.onPostExecute(tasks);
-				
-			}
-		}
-		
-		GetCountry gt = new GetCountry();
-		gt.execute();
-	}
-	
-	private void getEmployee() {
+
+	private void getEmployee(final String area) {
 		class GetEmployee extends AsyncTask<Void, Void, List<Employee>> {
 			
 			@Override
@@ -245,15 +217,27 @@ public class MainActivity extends AppCompatActivity {
 						.getInstance(getApplicationContext())
 						.getAppDatabase()
 						.taskDao()
-						.getAllEmployee();
+						.findEmployeeById(area);
 				
-				Log.e("EMPLOYEEEE",taskList.toString());
 				return taskList;
 			}
 			@Override
 			protected void onPostExecute(List<Employee> tasks) {
 				super.onPostExecute(tasks);
-				
+				employeeAdapter = new EmployeeListAdapter(getApplicationContext(), tasks);
+			
+				EmployeeSpinner.setAdapter(employeeAdapter);
+				EmployeeSpinner.setStatusListener(new IStatusListener() {
+					@Override
+					public void spinnerIsOpening() {
+						hideSpinnerView();
+					}
+					
+					@Override
+					public void spinnerIsClosing() {
+						
+					}
+				});
 			}
 		}
 		
@@ -272,13 +256,25 @@ public class MainActivity extends AppCompatActivity {
 						.taskDao()
 						.getAllRegion();
 				
-				Log.e("REGIONNNNNN",taskList.toString());
 				return taskList;
 			}
 			@Override
 			protected void onPostExecute(List<Region> tasks) {
 				super.onPostExecute(tasks);
-				
+				RegionListAdapters = new RegionListAdapter(getApplicationContext(), tasks);
+			
+				RegionSpinner.setAdapter(RegionListAdapters);
+				RegionSpinner.setStatusListener(new IStatusListener() {
+					@Override
+					public void spinnerIsOpening() {
+						hideSpinnerView();
+					}
+					
+					@Override
+					public void spinnerIsClosing() {
+					
+					}
+				});
 			}
 		}
 		
@@ -296,13 +292,25 @@ public class MainActivity extends AppCompatActivity {
 						.getAppDatabase()
 						.taskDao()
 						.getAllZone();
-				
-				Log.e("ZONEEEEEEE",taskList.toString());
 				return taskList;
 			}
 			@Override
 			protected void onPostExecute(List<Zone> tasks) {
 				super.onPostExecute(tasks);
+				ZoneListAdapter = new ZoneListAdapter(getApplicationContext(), tasks);
+			
+				ZoneSpinner.setAdapter(ZoneListAdapter);
+				ZoneSpinner.setStatusListener(new IStatusListener() {
+					@Override
+					public void spinnerIsOpening() {
+						hideSpinnerView();
+					}
+					
+					@Override
+					public void spinnerIsClosing() {
+					
+					}
+				});
 				
 			}
 		}
@@ -321,22 +329,36 @@ public class MainActivity extends AppCompatActivity {
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (!mSearchableSpinner.isInsideSearchEditText(event)) {
-			mSearchableSpinner.hideEdit();
+		if (!CountrySpinner.isInsideSearchEditText(event)) {
+			CountrySpinner.hideEdit();
 		}
-		if (!mSearchableSpinner1.isInsideSearchEditText(event)) {
-			mSearchableSpinner1.hideEdit();
+		if (!ZoneSpinner.isInsideSearchEditText(event)) {
+			ZoneSpinner.hideEdit();
 		}
-		if (!mSearchableSpinner2.isInsideSearchEditText(event)) {
-			mSearchableSpinner2.hideEdit();
+		if (!EmployeeSpinner.isInsideSearchEditText(event)) {
+			EmployeeSpinner.hideEdit();
+		}if (!AreaSpinner.isInsideSearchEditText(event)) {
+			AreaSpinner.hideEdit();
+		}if (!RegionSpinner.isInsideSearchEditText(event)) {
+			RegionSpinner.hideEdit();
 		}
 		return super.onTouchEvent(event);
 	}
 	
-	private OnItemSelectedListener mOnItemSelectedListener = new OnItemSelectedListener() {
+	private OnItemSelectedListener mOnItemSelectedListenerCountry = new OnItemSelectedListener() {
 		@Override
 		public void onItemSelected(View view, int position, long id) {
-			Toast.makeText(MainActivity.this, "Item on position " + position + " : " + mSimpleListAdapter.getItem(position) + " Selected", Toast.LENGTH_SHORT).show();
+					if (position==0){
+						ZoneSpinner.setVisibility(View.GONE);
+						AreaSpinner.setVisibility(View.GONE);
+						RegionSpinner.setVisibility(View.GONE);
+						EmployeeSpinner.setVisibility(View.GONE);
+						//ZoneSpinner.setSelectedItem(0);
+					}else {
+						ZoneSpinner.setVisibility(View.VISIBLE);
+						getZone();
+					}
+			
 		}
 		
 		@Override
@@ -345,81 +367,109 @@ public class MainActivity extends AppCompatActivity {
 		}
 	};
 	
-	private void initListValues() {
-		mStrings.add("Brigida Kurz");
-		mStrings.add("Tracy Mckim");
-		mStrings.add("Iesha Davids");
-		mStrings.add("Ozella Provenza");
-		mStrings.add("Florentina Carriere");
-		mStrings.add("Geri Eiler");
-		mStrings.add("Tammara Belgrave");
-		mStrings.add("Ashton Ridinger");
-		mStrings.add("Jodee Dawkins");
-		mStrings.add("Florine Cruzan");
-		mStrings.add("Latia Stead");
-		mStrings.add("Kai Urbain");
-		mStrings.add("Liza Chi");
-		mStrings.add("Clayton Laprade");
-		mStrings.add("Wilfredo Mooney");
-		mStrings.add("Roseline Cain");
-		mStrings.add("Chadwick Gauna");
-		mStrings.add("Carmela Bourn");
-		mStrings.add("Valeri Dedios");
-		mStrings.add("Calista Mcneese");
-		mStrings.add("Willard Cuccia");
-		mStrings.add("Ngan Blakey");
-		mStrings.add("Reina Medlen");
-		mStrings.add("Fabian Steenbergen");
-		mStrings.add("Edmond Pine");
-		mStrings.add("Teri Quesada");
-		mStrings.add("Vernetta Fulgham");
-		mStrings.add("Winnifred Kiefer");
-		mStrings.add("Chiquita Lichty");
-		mStrings.add("Elna Stiltner");
-		mStrings.add("Carly Landon");
-		mStrings.add("Hans Morford");
-		mStrings.add("Shawanna Kapoor");
-		mStrings.add("Thomasina Naron");
-		mStrings.add("Melba Massi");
-		mStrings.add("Sal Mangano");
-		mStrings.add("Mika Weitzel");
-		mStrings.add("Phylis France");
-		mStrings.add("Illa Winzer");
-		mStrings.add("Kristofer Boyden");
-		mStrings.add("Idalia Cryan");
-		mStrings.add("Jenni Sousa");
-		mStrings.add("Eda Forkey");
-		mStrings.add("Birgit Rispoli");
-		mStrings.add("Janiece Mcguffey");
-		mStrings.add("Barton Busick");
-		mStrings.add("Gerald Westerman");
-		mStrings.add("Shalanda Baran");
-		mStrings.add("Margherita Pazos");
-		mStrings.add("Yuk Fitts");
-	}
+	
+	private OnItemSelectedListener mOnItemSelectedListenerArea = new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(View view, int position, long id) {
+			Area area=AreaListAdapter.getItem(position);
+			
+			if (position==0){
+				EmployeeSpinner.setVisibility(View.GONE);
+				AreaSpinner.setVisibility(View.GONE);
+				RegionSpinner.setVisibility(View.GONE);
+				
+			}else {
+				EmployeeSpinner.setVisibility(View.VISIBLE);
+				getEmployee(area.getArea());
+			}
+		}
+		
+		@Override
+		public void onNothingSelected() {
+			Toast.makeText(MainActivity.this, "Nothing Selected", Toast.LENGTH_SHORT).show();
+		}
+	};
+	private OnItemSelectedListener mOnItemSelectedListenerRegion = new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(View view, int position, long id) {
+			Region region=RegionListAdapters.getItem(position);
+			//Toast.makeText(MainActivity.this, "Item on position " + position + " : " + region.getRegion() + " Selected", Toast.LENGTH_SHORT).show();
+			if (position==0){
+				AreaSpinner.setVisibility(View.GONE);
+				EmployeeSpinner.setVisibility(View.GONE);
+			}else {
+				AreaSpinner.setVisibility(View.VISIBLE);
+				getArea();
+			}
+			
+		}
+		
+		@Override
+		public void onNothingSelected() {
+			Toast.makeText(MainActivity.this, "Nothing Selected", Toast.LENGTH_SHORT).show();
+		}
+	};
+	private OnItemSelectedListener mOnItemSelectedListenerZone = new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(View view, int position, long id) {
+			if (position==0){
+				AreaSpinner.setVisibility(View.GONE);
+				RegionSpinner.setVisibility(View.GONE);
+				EmployeeSpinner.setVisibility(View.GONE);
+				
+			}else {
+				RegionSpinner.setVisibility(View.VISIBLE);
+				getRegion();
+			}
+			
+		}
+		
+		@Override
+		public void onNothingSelected() {
+			Toast.makeText(MainActivity.this, "Nothing Selected", Toast.LENGTH_SHORT).show();
+		}
+	};
+	private OnItemSelectedListener mOnItemSelectedListenerEmployee = new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(View view, int position, long id) {
+			Employee area=employeeAdapter.getItem(position);
+			
+		}
+		
+		@Override
+		public void onNothingSelected() {
+			Toast.makeText(MainActivity.this, "Nothing Selected", Toast.LENGTH_SHORT).show();
+		}
+	};
+	
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.menu_main, menu);
 		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
+		
 		int id = item.getItemId();
 		
-		//noinspection SimplifiableIfStatement
+		
 		if (id == R.id.action_reset) {
-			mSearchableSpinner.setSelectedItem(0);
-			mSearchableSpinner1.setSelectedItem(0);
-			mSearchableSpinner2.setSelectedItem(0);
+			CountrySpinner.setSelectedItem(0);
+			ZoneSpinner.setSelectedItem(0);
+			EmployeeSpinner.setSelectedItem(0);
 			return true;
 		}
 		
 		return super.onOptionsItemSelected(item);
 	}
+	public void hideSpinnerView(){
+		CountrySpinner.hideEdit();
+		EmployeeSpinner.hideEdit();
+		AreaSpinner.hideEdit();
+		RegionSpinner.hideEdit();
+		ZoneSpinner.hideEdit();
+	}
+	
 }

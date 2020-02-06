@@ -3,9 +3,10 @@ package rahultyag.in.javanestedexample.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -15,25 +16,23 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.ISpinnerSelectedView;
-import gr.escsoft.michaelprimez.searchablespinner.interfaces.OnItemSelectedListener;
 import gr.escsoft.michaelprimez.searchablespinner.tools.UITools;
 import rahultyag.in.javanestedexample.R;
+import rahultyag.in.javanestedexample.model.Region;
 
-/**
- * Created by michael on 1/8/17.
- */
 
-public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinnerSelectedView {
+public class RegionListAdapter extends ArrayAdapter<Region> implements Filterable, ISpinnerSelectedView {
 
     private Context mContext;
-    private ArrayList<String> mBackupStrings;
-    private ArrayList<String> mStrings;
+    private List<Region> mBackupStrings;
+    private List<Region> mStrings;
     private StringFilter mStringFilter = new StringFilter();
 
-    public SimpleListAdapter(Context context, ArrayList<String> strings) {
+    public RegionListAdapter(Context context, List<Region> strings) {
+        super(context, R.layout.view_list_item);
         mContext = context;
         mStrings = strings;
         mBackupStrings = strings;
@@ -41,21 +40,31 @@ public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinn
 
     @Override
     public int getCount() {
-        return mStrings == null ? 0 : mStrings.size() + 1;
+
+        return mStrings == null ? 0 : mStrings.size()+1;
     }
 
     @Override
-    public Object getItem(int position) {
-        if (mStrings != null && position > 0)
-            return mStrings.get(position - 1);
-        else
+    public Region getItem(int position) {
+       // Region area=mStrings.get(position);
+       if (mStrings != null && position > 0) {
+          Region area = mStrings.get(position-1);
+
+           return area;
+       }
+        else{
             return null;
+    }
     }
 
     @Override
     public long getItemId(int position) {
-        if (mStrings == null && position > 0)
+
+        if (mStrings == null && position > 0) {
+
+           // Region area=mStrings.get(position);
             return mStrings.get(position).hashCode();
+        }
         else
             return -1;
     }
@@ -63,14 +72,21 @@ public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinn
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = null;
+      //  Region area=mStrings.get(position);
+        
+        
         if (position == 0) {
             view = getNoSelectionView();
         } else {
             view = View.inflate(mContext, R.layout.view_list_item, null);
             ImageView letters = (ImageView) view.findViewById(R.id.ImgVw_Letters);
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
-            letters.setImageDrawable(getTextDrawable(mStrings.get(position-1)));
-            dispalyName.setText(mStrings.get(position-1));
+            TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
+
+            Log.e("jiijijijij",""+mStrings.size());
+           letters.setImageDrawable(getTextDrawable(mStrings.get(position-1).getRegion()));
+            dispalyName.setText(mStrings.get(position-1).getRegion());
+            TxtVw_Terror.setText(mStrings.get(position-1).getTerritory());
         }
         return view;
     }
@@ -78,14 +94,18 @@ public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinn
     @Override
     public View getSelectedView(int position) {
         View view = null;
+       // Region area=mStrings.get(position);
+        Log.e("yfyffyfyfyf",mStrings.toString());
         if (position == 0) {
             view = getNoSelectionView();
         } else {
             view = View.inflate(mContext, R.layout.view_list_item, null);
             ImageView letters = (ImageView) view.findViewById(R.id.ImgVw_Letters);
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
-            letters.setImageDrawable(getTextDrawable(mStrings.get(position-1)));
-            dispalyName.setText(mStrings.get(position-1));
+            TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
+           letters.setImageDrawable(getTextDrawable(mStrings.get(position-1).getRegion()));
+            dispalyName.setText(mStrings.get(position-1).getRegion());
+            TxtVw_Terror.setText(mStrings.get(position-1).getTerritory());
         }
         return view;
     }
@@ -136,9 +156,9 @@ public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinn
                 filterResults.values = mBackupStrings;
                 return filterResults;
             }
-            final ArrayList<String> filterStrings = new ArrayList<>();
-            for (String text : mBackupStrings) {
-                if (text.toLowerCase().contains(constraint)) {
+            final List<Region> filterStrings = new ArrayList<>();
+            for (Region text : mBackupStrings) {
+                if (text.getRegion().toLowerCase().contains(constraint)) {
                     filterStrings.add(text);
                 }
             }
@@ -150,7 +170,13 @@ public class SimpleListAdapter extends BaseAdapter implements Filterable, ISpinn
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             mStrings = (ArrayList) results.values;
-            notifyDataSetChanged();
+            Log.e("jhbjhbjhbjhb",mStrings.toString()+"\n"+results.values);
+            if (results.count > 0) {
+                notifyDataSetChanged();
+            } else {
+                notifyDataSetInvalidated();
+            }
+
         }
     }
 

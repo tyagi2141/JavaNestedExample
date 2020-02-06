@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -19,24 +18,20 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import gr.escsoft.michaelprimez.searchablespinner.interfaces.ISpinnerSelectedView;
 import gr.escsoft.michaelprimez.searchablespinner.tools.UITools;
 import rahultyag.in.javanestedexample.R;
-import rahultyag.in.javanestedexample.model.Area;
+import rahultyag.in.javanestedexample.model.Country;
 
-/**
- * Created by michael on 1/8/17.
- */
 
-public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filterable, ISpinnerSelectedView {
+public class CountryListAdapter extends ArrayAdapter<Country> implements Filterable, ISpinnerSelectedView {
 
     private Context mContext;
-    private List<Area> mBackupStrings;
-    private List<Area> mStrings;
+    private List<Country> mBackupStrings;
+    private List<Country> mStrings;
     private StringFilter mStringFilter = new StringFilter();
 
-    public SimpleArrayListAdapter(Context context, List<Area> strings) {
+    public CountryListAdapter(Context context, List<Country> strings) {
         super(context, R.layout.view_list_item);
         mContext = context;
         mStrings = strings;
@@ -46,14 +41,14 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
     @Override
     public int getCount() {
 
-        return mStrings == null ? 0 : mStrings.size();
+        return mStrings == null ? 0 : mStrings.size()+1;
     }
 
     @Override
-    public Area getItem(int position) {
-       // Area area=mStrings.get(position);
+    public Country getItem(int position) {
+       // Country area=mStrings.get(position);
        if (mStrings != null && position > 0) {
-           Area area = mStrings.get(position);
+          Country area = mStrings.get(position-1);
 
            return area;
        }
@@ -67,8 +62,8 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
 
         if (mStrings == null && position > 0) {
 
-            Area area=mStrings.get(position);
-            return area.hashCode();
+           // Country area=mStrings.get(position);
+            return mStrings.get(position).hashCode();
         }
         else
             return -1;
@@ -77,7 +72,9 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = null;
-        Area area=mStrings.get(position);
+      //  Country area=mStrings.get(position);
+        
+        
         if (position == 0) {
             view = getNoSelectionView();
         } else {
@@ -86,9 +83,10 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
             TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
 
-            letters.setImageDrawable(getTextDrawable(area.getArea()));
-            dispalyName.setText(area.getArea());
-            TxtVw_Terror.setText(area.getTerritory());
+            Log.e("jiijijijij",""+mStrings.size());
+           letters.setImageDrawable(getTextDrawable(mStrings.get(position-1).getCountry()));
+            dispalyName.setText(mStrings.get(position-1).getCountry());
+            TxtVw_Terror.setText(mStrings.get(position-1).getTerritory());
         }
         return view;
     }
@@ -96,7 +94,7 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
     @Override
     public View getSelectedView(int position) {
         View view = null;
-        Area area=mStrings.get(position);
+       // Country area=mStrings.get(position);
         Log.e("yfyffyfyfyf",mStrings.toString());
         if (position == 0) {
             view = getNoSelectionView();
@@ -105,10 +103,9 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
             ImageView letters = (ImageView) view.findViewById(R.id.ImgVw_Letters);
             TextView dispalyName = (TextView) view.findViewById(R.id.TxtVw_DisplayName);
             TextView TxtVw_Terror = (TextView) view.findViewById(R.id.TxtVw_Terror);
-
-            letters.setImageDrawable(getTextDrawable(area.getArea()));
-            dispalyName.setText(area.getArea());
-            TxtVw_Terror.setText(area.getTerritory());
+           letters.setImageDrawable(getTextDrawable(mStrings.get(position-1).getCountry()));
+            dispalyName.setText(mStrings.get(position-1).getCountry());
+            TxtVw_Terror.setText(mStrings.get(position-1).getTerritory());
         }
         return view;
     }
@@ -159,9 +156,9 @@ public class SimpleArrayListAdapter extends ArrayAdapter<Area> implements Filter
                 filterResults.values = mBackupStrings;
                 return filterResults;
             }
-            final List<Area> filterStrings = new ArrayList<>();
-            for (Area text : mBackupStrings) {
-                if (text.getArea().toLowerCase().contains(constraint)) {
+            final List<Country> filterStrings = new ArrayList<>();
+            for (Country text : mBackupStrings) {
+                if (text.getCountry().toLowerCase().contains(constraint)) {
                     filterStrings.add(text);
                 }
             }

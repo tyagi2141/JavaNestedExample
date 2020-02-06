@@ -17,10 +17,10 @@ public class Country {
     @NonNull
     @SerializedName("country")
     @Expose
-    private String country;
+    private String country="";
     @SerializedName("territory")
     @Expose
-    private String territory;
+    private String territory="";
 
     public String getCountry() {
         return country;

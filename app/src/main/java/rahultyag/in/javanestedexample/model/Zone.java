@@ -16,10 +16,10 @@ public class Zone {
    @NonNull
     @SerializedName("zone")
     @Expose
-    private String zone;
+    private String zone="";
     @SerializedName("territory")
     @Expose
-    private String territory;
+    private String territory="";
 
     public String getZone() {
         return zone;

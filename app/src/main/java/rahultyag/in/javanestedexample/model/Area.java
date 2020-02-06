@@ -18,10 +18,10 @@ public class Area {
     @NonNull
     @SerializedName("area")
     @Expose
-    private String area;
+    private String area="";
     @SerializedName("territory")
     @Expose
-    private String territory;
+    private String territory="";
 
     public String getArea() {
         return area;
